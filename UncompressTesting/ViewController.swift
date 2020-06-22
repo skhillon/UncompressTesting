@@ -18,6 +18,7 @@ class ViewController: UIViewController {
       return
     }
 
+    // Load archive file contents as `Data`, which is the same thing you would get from the server.
     guard let fileData = try? Data(contentsOf: url, options: .uncached) else {
       return
     }
@@ -26,23 +27,25 @@ class ViewController: UIViewController {
       return
     }
 
+    // The archive should have just 1 file, which we want to extract.
     guard let entry = archive["data.json"] else {
-        return
+      // === ERROR: This guard block is entered. ===
+      return
     }
 
     do {
+      // Combine all chunks into one, which can then be JSON serialized.
       var uncompressedData = Data()
-      _ = try archive.extract(entry) { data in
-        uncompressedData.append(data)
-      }
+      _ = try archive.extract(entry) { chunk in uncompressedData.append(chunk) }
+
+      // Convert to JSON and print to make sure it looks ok.
       let json = try JSONSerialization.jsonObject(with: uncompressedData, options: []) as? [String: Any]
-      print(json)
+      print(json as Any)
     } catch {
-        print("Extracting entry from archive failed with error:\(error)")
+      print("Extracting entry from archive failed with error:\(error)")
     }
 
   }
-
 
 }
 
